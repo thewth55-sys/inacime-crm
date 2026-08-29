@@ -1,17 +1,17 @@
 {
-  "name": "wacrm",
-  "version": "0.8.0",
+  "name": "inacime-crm",
+  "version": "0.1.0",
   "private": true,
-  "description": "Self-hostable CRM template for WhatsApp built on Next.js and Supabase — shared inbox, contacts, sales pipelines, broadcasts, and no-code automations.",
+  "description": "CRM de admisiones y bandeja de WhatsApp para INACIME. Derivado de wacrm (MIT).",
   "license": "MIT",
-  "author": "Arnas Donauskas",
-  "homepage": "https://github.com/ArnasDon/wacrm",
+  "author": "Zentro Labs",
+  "homepage": "https://github.com/thewth55-sys/inacime-crm",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArnasDon/wacrm.git"
+    "url": "git+https://github.com/thewth55-sys/inacime-crm.git"
   },
   "bugs": {
-    "url": "https://github.com/ArnasDon/wacrm/issues"
+    "url": "https://github.com/thewth55-sys/inacime-crm/issues"
   },
   "keywords": [
     "crm",

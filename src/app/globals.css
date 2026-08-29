@@ -147,7 +147,27 @@ html[data-mode="light"] {
 
 /* ---- ACCENT: primary color ---- */
 
+/* INACIME — paleta institucional. Es el acento por defecto del panel.
+ * #27348B azul institucional · #00C1F4 cian · #BDDB61 lima · #7B2D8E morado
+ * Los valores oklch salen de esos hex; si Dirección cambia la marca,
+ * se recalculan aquí y todo el sistema de componentes sigue. */
 :root,
+html[data-theme="inacime"] {
+  --primary: oklch(0.372 0.144 271);
+  --primary-foreground: oklch(0.985 0 0);
+  --primary-hover: oklch(0.464 0.168 271.3);
+  --primary-soft: oklch(0.372 0.144 271 / 0.12);
+  --primary-soft-2: oklch(0.372 0.144 271 / 0.2);
+  --ring: oklch(0.372 0.144 271);
+  --chart-1: oklch(0.372 0.144 271);
+  --chart-2: oklch(0.755 0.144 225.5);
+  --chart-3: oklch(0.845 0.152 121.3);
+  --chart-4: oklch(0.453 0.164 319.2);
+  --sidebar-primary: oklch(0.372 0.144 271);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-ring: oklch(0.372 0.144 271);
+}
+
 html[data-theme="violet"] {
   --primary: oklch(0.526 0.247 293);
   --primary-foreground: oklch(0.985 0 0);

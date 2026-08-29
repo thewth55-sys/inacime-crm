@@ -14,6 +14,7 @@
  */
 
 export const THEME_IDS = [
+  "inacime",
   "violet",
   "emerald",
   "cobalt",
@@ -23,9 +24,9 @@ export const THEME_IDS = [
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+export const DEFAULT_THEME: ThemeId = "inacime";
 
-export const STORAGE_KEY = "wacrm.theme";
+export const STORAGE_KEY = "inacime.theme";
 
 /**
  * MODE — the light/dark dimension, orthogonal to the accent theme.
@@ -45,7 +46,7 @@ export type Mode = (typeof MODES)[number];
 
 export const DEFAULT_MODE: Mode = "dark";
 
-export const MODE_STORAGE_KEY = "wacrm.mode";
+export const MODE_STORAGE_KEY = "inacime.mode";
 
 export function isMode(value: unknown): value is Mode {
   return (
@@ -67,6 +68,12 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
+  {
+    id: "inacime",
+    name: "INACIME",
+    tagline: "Azul institucional. El acento oficial del panel.",
+    swatch: "oklch(0.372 0.144 271)",
+  },
   {
     id: "violet",
     name: "Violet",
