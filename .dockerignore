@@ -37,8 +37,11 @@ docker-compose*.yml
 .prettierrc
 .prettierignore
 eslint.config.mjs
-tsconfig.json
-postcss.config.mjs
+# NO excluir tsconfig.json ni postcss.config.mjs: `next build` los necesita.
+#   tsconfig.json      -> define los alias de rutas `@/*` -> ./src/*
+#   postcss.config.mjs -> carga Tailwind
+# Sin ellos la compilación en Docker falla con "Can't resolve '@/...'"
+# y el CSS sale sin procesar.
 components.json
 AGENTS.md
 CLAUDE.md
