@@ -48,6 +48,8 @@ function LoginPageInner() {
   // El mockup ofrece dos accesos. Ambos autentican igual; lo único que cambia
   // es cómo se llama el identificador que la persona tiene a la mano.
   const esDocente = searchParams.get("acceso") === "docente";
+  // Lo pone el middleware cuando alguien intenta entrar a /signup sin invitación.
+  const registroCerrado = searchParams.get("registro") === "cerrado";
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
@@ -115,6 +117,12 @@ function LoginPageInner() {
         </p>
 
         <form onSubmit={handleLogin} className="flex max-w-[400px] flex-col gap-[18px]">
+          {registroCerrado && !error && (
+            <div className="rounded-xl border border-[#cfe3f7] bg-[#eaf3fd] px-4 py-3 text-sm font-semibold leading-relaxed text-[#27348B]">
+              El acceso al panel es por invitación. Pide a Servicios Escolares
+              que te dé de alta.
+            </div>
+          )}
           {error && (
             <div
               role="alert"

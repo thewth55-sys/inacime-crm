@@ -42,6 +42,25 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // Registro cerrado: al Panel INACIME sólo se entra por invitación.
+  //
+  // Sin esto, cualquiera con la dirección puede crearse una cuenta — y como
+  // el trigger `on_auth_user_created` levanta una CUENTA NUEVA por cada alta,
+  // cada intruso quedaría de dueño de su propio espacio dentro de la misma
+  // instalación.
+  //
+  // Esta puerta es sólo la del navegador. El cerrojo de verdad está en
+  // Supabase → Authentication → Providers → Email → "Allow new users to
+  // sign up", que impide el alta aunque alguien llame a la API directo.
+  // Van los dos: éste da un mensaje claro, aquél impide el paso.
+  if (request.nextUrl.pathname === '/signup' &&
+      !request.nextUrl.searchParams.get('invite')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.search = '?registro=cerrado'
+    return withRefreshedCookies(NextResponse.redirect(url))
+  }
+
   // Auth pages - redirect to dashboard if already logged in.
   // Exception: when an invite token is in the query string we
   // send the already-signed-in user to /join/<token> instead so

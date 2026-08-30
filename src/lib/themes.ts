@@ -44,7 +44,9 @@ export const MODES = ["light", "dark"] as const;
 
 export type Mode = (typeof MODES)[number];
 
-export const DEFAULT_MODE: Mode = "dark";
+// El mockup institucional es claro, así que el panel arranca en claro.
+// Quien prefiera oscuro lo cambia y se le recuerda en localStorage.
+export const DEFAULT_MODE: Mode = "light";
 
 export const MODE_STORAGE_KEY = "inacime.mode";
 
