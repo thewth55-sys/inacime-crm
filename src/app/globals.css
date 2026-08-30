@@ -253,3 +253,58 @@ html[data-theme="rose"] {
     @apply font-sans;
   }
 }
+/*
+ * FullCalendar sobre los tokens del panel.
+ *
+ * FullCalendar trae su propia paleta en variables CSS. En lugar de
+ * pelearse con ella regla por regla, se le apuntan sus variables a los
+ * tokens del tema: así la agenda sigue el modo claro/oscuro y el azul
+ * INACIME sin una segunda paleta que actualizar aparte.
+ */
+.fc {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--muted);
+  --fc-list-event-hover-bg-color: var(--muted);
+  --fc-today-bg-color: var(--primary-soft);
+  --fc-button-bg-color: var(--card);
+  --fc-button-border-color: var(--border);
+  --fc-button-text-color: var(--foreground);
+  --fc-button-hover-bg-color: var(--muted);
+  --fc-button-hover-border-color: var(--border);
+  --fc-button-active-bg-color: var(--primary);
+  --fc-button-active-border-color: var(--primary);
+  --fc-event-border-color: transparent;
+  --fc-now-indicator-color: var(--primary);
+  font-family: inherit;
+}
+.fc .fc-toolbar-title {
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.011em;
+}
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+  color: var(--muted-foreground);
+  font-weight: 600;
+  text-decoration: none;
+}
+.fc .fc-button {
+  border-radius: 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  box-shadow: none !important;
+}
+.fc .fc-button:disabled {
+  opacity: 0.5;
+}
+.fc .fc-event {
+  border-radius: 0.4rem;
+  font-weight: 600;
+}

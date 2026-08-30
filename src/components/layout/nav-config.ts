@@ -2,6 +2,7 @@ import {
   Bell,
   Bot,
   ClipboardCheck,
+  CalendarClock,
   GitBranch,
   GraduationCap,
   LayoutDashboard,
@@ -63,6 +64,7 @@ export const AREAS: NavArea[] = [
       { href: "/notifications", labelKey: "notifications", icon: Bell },
       { href: "/contacts", labelKey: "contacts", icon: Users },
       { href: "/pipelines", labelKey: "pipelines", icon: GitBranch },
+      { href: "/agenda", labelKey: "agenda", icon: CalendarClock },
       { href: "/broadcasts", labelKey: "broadcasts", icon: Radio },
       { href: "/automations", labelKey: "automations", icon: Zap },
       { href: "/flows", labelKey: "flows", icon: Workflow, beta: true },
@@ -76,6 +78,15 @@ export const AREAS: NavArea[] = [
     items: [
       { href: "/asistencias", labelKey: "asistencias", icon: ClipboardCheck },
       { href: "/calificaciones", labelKey: "calificaciones", icon: GraduationCap },
+      // Quien entrevista aspirantes declara aquí sus horas. No se le
+      // muestra a dirección ni a control escolar: ellos llegan desde la
+      // agenda misma, y en su menú sería un renglón que no les toca.
+      {
+        href: "/agenda/disponibilidad",
+        labelKey: "miDisponibilidad",
+        icon: CalendarClock,
+        soloRoles: ["coordinacion", "docente"],
+      },
     ],
   },
   {
@@ -132,12 +143,25 @@ export function areasDe(rol: RolAcademico | null): NavArea[] {
     .filter((a) => a.items.length > 0);
 }
 
-/** El área a la que pertenece una ruta, para abrir su grupo al entrar. */
+/**
+ * El área a la que pertenece una ruta, para abrir su grupo al entrar.
+ *
+ * Gana la coincidencia más larga, no la primera. `/agenda` y
+ * `/agenda/disponibilidad` viven en áreas distintas —una es trabajo de
+ * admisiones y la otra de quien entrevista—, y recorrer las áreas en
+ * orden abriría siempre la de `/agenda`.
+ */
 export function areaDeRuta(pathname: string): string | null {
+  let area: string | null = null;
+  let largo = -1;
   for (const a of AREAS) {
-    if (a.items.some((i) => pathname === i.href || pathname.startsWith(i.href + "/"))) {
-      return a.id;
+    for (const i of a.items) {
+      const coincide = pathname === i.href || pathname.startsWith(i.href + "/");
+      if (coincide && i.href.length > largo) {
+        largo = i.href.length;
+        area = a.id;
+      }
     }
   }
-  return null;
+  return area;
 }

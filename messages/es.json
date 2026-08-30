@@ -53,7 +53,9 @@
     "areaAdmisiones": "Admisiones",
     "areaDocencia": "Docencia",
     "areaControlEscolar": "Control Escolar",
-    "areaAdministracion": "Administración"
+    "areaAdministracion": "Administración",
+    "agenda": "Agenda",
+    "miDisponibilidad": "Mi disponibilidad"
   },
   "Header": {
     "dashboard": "Panel",
@@ -75,7 +77,10 @@
     "calificaciones": "Calificaciones por grupo",
     "reglamento": "Reglamento de evaluación",
     "usuarios": "Usuarios del expediente",
-    "altaAlumnos": "Alta de alumnos"
+    "altaAlumnos": "Alta de alumnos",
+    "agenda": "Agenda de entrevistas",
+    "miDisponibilidad": "Mi disponibilidad",
+    "catalogoAgenda": "Catálogo de la agenda"
   },
   "ModeToggle": {
     "switchMode": "Cambiar entre modo claro y oscuro"

@@ -28,6 +28,9 @@ const pageEyebrows: Record<string, string> = {
   "/calificaciones": "CAPTURA",
   "/reglamento": "CONFIGURACIÓN",
   "/alta-alumnos": "ADMISIONES",
+  "/agenda/disponibilidad": "MI AGENDA",
+  "/agenda/catalogo": "CONFIGURACIÓN",
+  "/agenda": "ADMISIONES",
   "/usuarios": "ADMINISTRACIÓN",
   "/contacts": "CAPTACIÓN",
   "/pipelines": "CAPTACIÓN",
@@ -39,9 +42,9 @@ const pageEyebrows: Record<string, string> = {
 };
 
 function getEyebrow(pathname: string): string | null {
-  const hit = Object.entries(pageEyebrows).find(
-    ([path]) => pathname === path || pathname.startsWith(path + "/"),
-  );
+  const hit = Object.entries(pageEyebrows)
+    .filter(([path]) => pathname === path || pathname.startsWith(path + "/"))
+    .sort((a, b) => b[0].length - a[0].length)[0];
   return hit ? hit[1] : null;
 }
 
@@ -53,6 +56,9 @@ const pageTitles: Record<string, string> = {
   "/calificaciones": "calificaciones",
   "/reglamento": "reglamento",
   "/alta-alumnos": "altaAlumnos",
+  "/agenda/disponibilidad": "miDisponibilidad",
+  "/agenda/catalogo": "catalogoAgenda",
+  "/agenda": "agenda",
   "/usuarios": "usuarios",
   "/contacts": "contacts",
   "/pipelines": "pipelines",
@@ -63,9 +69,12 @@ const pageTitles: Record<string, string> = {
 
 function getPageTitleKey(pathname: string): string {
   if (pageTitles[pathname]) return pageTitles[pathname];
-  const match = Object.entries(pageTitles).find(([path]) =>
-    pathname.startsWith(path),
-  );
+  // Gana el prefijo más largo: si no, /agenda/catalogo se resolvería
+  // como /agenda y el encabezado diría "Agenda" en la pantalla de
+  // catálogo, según el orden en que estén escritas las entradas.
+  const match = Object.entries(pageTitles)
+    .filter(([path]) => pathname.startsWith(path + "/"))
+    .sort((a, b) => b[0].length - a[0].length)[0];
   return match ? match[1] : "dashboard";
 }
 
