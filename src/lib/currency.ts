@@ -11,7 +11,9 @@
  */
 
 /** App-wide fallback when no account/deal currency is available. */
-export const DEFAULT_CURRENCY = "USD";
+// INACIME factura en pesos. Es sólo el valor de reserva: si la cuenta ya
+// tiene `default_currency` en la base, ése manda.
+export const DEFAULT_CURRENCY = "MXN";
 
 export interface CurrencyOption {
   /** ISO-4217 code, e.g. "USD". Stored verbatim in the DB. */
@@ -28,7 +30,7 @@ export interface CurrencyOption {
  * list to offer more — nothing else needs to change.
  */
 export const CURRENCIES: CurrencyOption[] = [
-  { code: "USD", label: "US Dollar", symbol: "$" },
+  { code: "USD", label: "Dólar estadounidense", symbol: "$" },
   { code: "EUR", label: "Euro", symbol: "€" },
   { code: "GBP", label: "British Pound", symbol: "£" },
   { code: "INR", label: "Indian Rupee", symbol: "₹" },
@@ -41,7 +43,7 @@ export const CURRENCIES: CurrencyOption[] = [
   { code: "ZAR", label: "South African Rand", symbol: "R" },
   { code: "NGN", label: "Nigerian Naira", symbol: "₦" },
   { code: "SGD", label: "Singapore Dollar", symbol: "S$" },
-  { code: "MXN", label: "Mexican Peso", symbol: "$" },
+  { code: "MXN", label: "Peso mexicano", symbol: "$" },
 ];
 
 /**
