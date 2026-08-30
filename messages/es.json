@@ -39,7 +39,15 @@
     "menuProfile": "Mi perfil",
     "menuSettings": "Configuración",
     "menuSignOut": "Cerrar sesión",
-    "asistencias": "Asistencias"
+    "asistencias": "Asistencias",
+    "calificaciones": "Calificaciones",
+    "reglamento": "Reglamento",
+    "rol_direccion": "Dirección",
+    "rol_control_escolar": "Control Escolar",
+    "rol_finanzas": "Finanzas",
+    "rol_coordinacion": "Coordinación",
+    "rol_docente": "Docente",
+    "rol_alumno": "Alumno"
   },
   "Header": {
     "dashboard": "Panel",
@@ -57,7 +65,9 @@
     "menuProfile": "Mi perfil",
     "menuSettings": "Configuración",
     "menuSignOut": "Cerrar sesión",
-    "asistencias": "Registro de asistencias"
+    "asistencias": "Registro de asistencias",
+    "calificaciones": "Calificaciones por grupo",
+    "reglamento": "Reglamento de evaluación"
   },
   "ModeToggle": {
     "switchMode": "Cambiar entre modo claro y oscuro"

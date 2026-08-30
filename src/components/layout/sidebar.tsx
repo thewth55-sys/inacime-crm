@@ -12,6 +12,8 @@ import {
   Bell,
   Bot,
   ClipboardCheck,
+  GraduationCap,
+  Scale,
   Crown,
   GitBranch,
   LayoutDashboard,
@@ -29,6 +31,11 @@ import {
   Zap,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
+import {
+  ROLES_REGLAMENTO,
+  useRolAcademico,
+  type RolAcademico,
+} from "@/hooks/use-rol-academico";
 
 // Per-role chip metadata used in the sidebar's account strip + the
 // Members tab roster. Keeping this near both consumers in a single
@@ -73,17 +80,52 @@ interface NavItem {
   labelKey: string;
   icon: typeof LayoutDashboard;
   /**
+   * Roles escolares que ven esta opción. Si se omite, la opción es del CRM:
+   * la ven todos MENOS docentes y alumnos, que no tienen cuenta de CRM.
+   *
+   * Esto sólo decide qué se muestra. Quién puede leer o escribir qué lo
+   * decide RLS: esconder una opción del menú no protege nada, sólo evita
+   * mandar a alguien a una pantalla que le va a decir que no.
+   */
+  rolesAcademicos?: RolAcademico[];
+  /** Visible siempre, tenga o no rol escolar. */
+  siempre?: boolean;
+  /**
    * When true, the nav row renders a small "Beta" chip after the label.
    * Purely informational — doesn't affect routing or access.
    */
   beta?: boolean;
 }
 
+const ACADEMICO_TODOS: RolAcademico[] = [
+  "direccion",
+  "control_escolar",
+  "coordinacion",
+  "docente",
+];
+
 const navItems: NavItem[] = [
-  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard, siempre: true },
   { href: "/inbox", labelKey: "inbox", icon: MessageSquare },
   { href: "/notifications", labelKey: "notifications", icon: Bell },
-  { href: "/asistencias", labelKey: "asistencias", icon: ClipboardCheck },
+  {
+    href: "/asistencias",
+    labelKey: "asistencias",
+    icon: ClipboardCheck,
+    rolesAcademicos: ACADEMICO_TODOS,
+  },
+  {
+    href: "/calificaciones",
+    labelKey: "calificaciones",
+    icon: GraduationCap,
+    rolesAcademicos: ACADEMICO_TODOS,
+  },
+  {
+    href: "/reglamento",
+    labelKey: "reglamento",
+    icon: Scale,
+    rolesAcademicos: ROLES_REGLAMENTO,
+  },
   { href: "/contacts", labelKey: "contacts", icon: Users },
   { href: "/pipelines", labelKey: "pipelines", icon: GitBranch },
   { href: "/broadcasts", labelKey: "broadcasts", icon: Radio },
@@ -117,6 +159,26 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
   const unreadNotifications = useUnreadNotifications();
+  const { rol: rolAcademico, cargando: cargandoRol } = useRolAcademico();
+
+  // Docentes y alumnos no tienen cuenta del CRM — el latido de presencia ya
+  // lo mostraba fallando en cada ciclo. Enseñarles la bandeja o el embudo
+  // sólo los manda a una pantalla vacía.
+  const soloEscolar = rolAcademico === "docente" || rolAcademico === "alumno";
+
+  const visible = (item: NavItem) => {
+    if (item.siempre) return true;
+    if (item.rolesAcademicos) {
+      return rolAcademico !== null && item.rolesAcademicos.includes(rolAcademico);
+    }
+    return !soloEscolar;
+  };
+
+  // Mientras se resuelve el rol se muestra sólo lo que no depende de él, para
+  // que las opciones no parpadeen al cargar.
+  const itemsVisibles = cargandoRol
+    ? navItems.filter((i) => i.siempre)
+    : navItems.filter(visible);
   // Only surface the account-name strip when it actually carries
   // information. A solo user's personal account is named after them
   // (the 017 signup trigger seeds it from `full_name`), so showing it
@@ -218,7 +280,14 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                 {profile?.full_name || t("defaultUser")}
               </div>
               <div className="truncate text-[11.5px] font-semibold text-sidebar-foreground/50">
-                {accountRole ? t(ROLE_CHIP[accountRole].labelKey) : profile?.email}
+                {/* El rol escolar manda sobre el del CRM: a un docente le
+                    servía de poco leer "Dueño", que es su rol de cuenta y no
+                    lo que hace en el panel. */}
+                {rolAcademico
+                  ? t(`rol_${rolAcademico}`)
+                  : accountRole
+                    ? t(ROLE_CHIP[accountRole].labelKey)
+                    : profile?.email}
               </div>
             </div>
           </div>
@@ -227,7 +296,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         {/* Main navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="flex flex-col gap-1">
-            {navItems.map((item) => {
+            {itemsVisibles.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));
