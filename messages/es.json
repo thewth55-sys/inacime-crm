@@ -49,7 +49,11 @@
     "rol_docente": "Docente",
     "rol_alumno": "Alumno",
     "usuarios": "Usuarios",
-    "altaAlumnos": "Alta de alumnos"
+    "altaAlumnos": "Alta de alumnos",
+    "areaAdmisiones": "Admisiones",
+    "areaDocencia": "Docencia",
+    "areaControlEscolar": "Control Escolar",
+    "areaAdministracion": "Administración"
   },
   "Header": {
     "dashboard": "Panel",

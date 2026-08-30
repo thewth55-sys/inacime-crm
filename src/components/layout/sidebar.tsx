@@ -3,40 +3,31 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useTotalUnread } from "@/hooks/use-total-unread";
 import { useUnreadNotifications } from "@/hooks/use-unread-notifications";
 import {
-  Bell,
-  Bot,
-  ClipboardCheck,
-  GraduationCap,
-  Scale,
+  ChevronDown,
   Crown,
-  GitBranch,
-  LayoutDashboard,
   LogOut,
-  MessageSquare,
-  Radio,
-  Settings,
   Shield,
   User,
   UserCog,
-  Users,
   UsersRound,
-  Workflow,
   X,
-  Zap,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 import { usePendientesDeAlta } from "@/hooks/use-pendientes-alta";
 import {
-  ROLES_REGLAMENTO,
-  useRolAcademico,
-  type RolAcademico,
-} from "@/hooks/use-rol-academico";
+  areaDeRuta,
+  areasDe,
+  NAV_PIE,
+  NAV_SIEMPRE,
+  type NavItem,
+} from "@/components/layout/nav-config";
+import { useRolAcademico } from "@/hooks/use-rol-academico";
 
 // Per-role chip metadata used in the sidebar's account strip + the
 // Members tab roster. Keeping this near both consumers in a single
@@ -76,81 +67,6 @@ const ROLE_CHIP: Record<
   },
 };
 
-interface NavItem {
-  href: string;
-  labelKey: string;
-  icon: typeof LayoutDashboard;
-  /**
-   * Roles escolares que ven esta opción. Si se omite, la opción es del CRM:
-   * la ven todos MENOS docentes y alumnos, que no tienen cuenta de CRM.
-   *
-   * Esto sólo decide qué se muestra. Quién puede leer o escribir qué lo
-   * decide RLS: esconder una opción del menú no protege nada, sólo evita
-   * mandar a alguien a una pantalla que le va a decir que no.
-   */
-  rolesAcademicos?: RolAcademico[];
-  /** Visible siempre, tenga o no rol escolar. */
-  siempre?: boolean;
-  /**
-   * When true, the nav row renders a small "Beta" chip after the label.
-   * Purely informational — doesn't affect routing or access.
-   */
-  beta?: boolean;
-}
-
-const ACADEMICO_TODOS: RolAcademico[] = [
-  "direccion",
-  "control_escolar",
-  "coordinacion",
-  "docente",
-];
-
-const navItems: NavItem[] = [
-  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard, siempre: true },
-  { href: "/inbox", labelKey: "inbox", icon: MessageSquare },
-  { href: "/notifications", labelKey: "notifications", icon: Bell },
-  {
-    href: "/asistencias",
-    labelKey: "asistencias",
-    icon: ClipboardCheck,
-    rolesAcademicos: ACADEMICO_TODOS,
-  },
-  {
-    href: "/calificaciones",
-    labelKey: "calificaciones",
-    icon: GraduationCap,
-    rolesAcademicos: ACADEMICO_TODOS,
-  },
-  {
-    href: "/alta-alumnos",
-    labelKey: "altaAlumnos",
-    icon: GraduationCap,
-    rolesAcademicos: ["direccion", "control_escolar"],
-  },
-  {
-    href: "/usuarios",
-    labelKey: "usuarios",
-    icon: UserCog,
-    rolesAcademicos: ["direccion"],
-  },
-  {
-    href: "/reglamento",
-    labelKey: "reglamento",
-    icon: Scale,
-    rolesAcademicos: ROLES_REGLAMENTO,
-  },
-  { href: "/contacts", labelKey: "contacts", icon: Users },
-  { href: "/pipelines", labelKey: "pipelines", icon: GitBranch },
-  { href: "/broadcasts", labelKey: "broadcasts", icon: Radio },
-  { href: "/automations", labelKey: "automations", icon: Zap },
-  { href: "/flows", labelKey: "flows", icon: Workflow, beta: true },
-  { href: "/agents", labelKey: "aiAgents", icon: Bot },
-];
-
-const bottomNavItems = [
-  { href: "/settings", labelKey: "settings", icon: Settings },
-];
-
 /** Iniciales para el avatar cuadrado: "Aranza Delgado Rueda" -> "AD". */
 function iniciales(nombre?: string | null, correo?: string | null): string {
   const base = (nombre || correo || "?").trim();
@@ -175,24 +91,27 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const { rol: rolAcademico, cargando: cargandoRol } = useRolAcademico();
   const pendientesAlta = usePendientesDeAlta(rolAcademico);
 
-  // Docentes y alumnos no tienen cuenta del CRM — el latido de presencia ya
-  // lo mostraba fallando en cada ciclo. Enseñarles la bandeja o el embudo
-  // sólo los manda a una pantalla vacía.
-  const soloEscolar = rolAcademico === "docente" || rolAcademico === "alumno";
+  const areas = cargandoRol ? [] : areasDe(rolAcademico);
+  // Con una sola área no tiene sentido plegar nada: sería un encabezado
+  // sobrando encima de la única lista que hay.
+  const plano = areas.length <= 1;
 
-  const visible = (item: NavItem) => {
-    if (item.siempre) return true;
-    if (item.rolesAcademicos) {
-      return rolAcademico !== null && item.rolesAcademicos.includes(rolAcademico);
-    }
-    return !soloEscolar;
-  };
+  // Arranca abierta el área de la ruta actual; el resto cerradas. Así, entrar
+  // a una herramienta no obliga a plegar las otras a mano.
+  const [abiertas, setAbiertas] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const actual = areaDeRuta(pathname);
+    if (actual) setAbiertas((prev) => (prev.has(actual) ? prev : new Set(prev).add(actual)));
+  }, [pathname]);
 
-  // Mientras se resuelve el rol se muestra sólo lo que no depende de él, para
-  // que las opciones no parpadeen al cargar.
-  const itemsVisibles = cargandoRol
-    ? navItems.filter((i) => i.siempre)
-    : navItems.filter(visible);
+  const alternarArea = (id: string) =>
+    setAbiertas((prev) => {
+      const siguiente = new Set(prev);
+      if (siguiente.has(id)) siguiente.delete(id);
+      else siguiente.add(id);
+      return siguiente;
+    });
+
   // Only surface the account-name strip when it actually carries
   // information. A solo user's personal account is named after them
   // (the 017 signup trigger seeds it from `full_name`), so showing it
@@ -307,108 +226,82 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
           </div>
         </div>
 
-        {/* Main navigation */}
+        {/* Navegación por área.
+            Con una sola área se pinta plana, como en el mockup: el docente ve
+            su lista y ya. Con varias —dirección— se agrupan y se pliegan, para
+            entrar a admisiones sin cargar con docencia al mismo tiempo. */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="flex flex-col gap-1">
-            {itemsVisibles.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
-              const showUnreadDot =
-                item.href === "/inbox" && totalUnread > 0 && !isActive;
-
-              // Unlike the inbox dot, the notifications count stays visible
-              // even while the page is active — it reflects unread state
-              // (cleared by marking notifications read), not "currently
-              // viewing this section".
-              const showNotificationBadge =
-                item.href === "/notifications" && unreadNotifications > 0;
-
-              // La insignia es lo que convierte "avísale a control escolar"
-              // en algo que el sistema empuja solo.
-              const pendientesEnEstaOpcion =
-                item.href === "/alta-alumnos" ? pendientesAlta : 0;
-
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      // Taller on mobile so fingers can hit the row reliably (≥44px).
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
-                      isActive
-                        ? "bg-primary font-bold text-primary-foreground"
-                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span className="flex-1">{t(item.labelKey as string)}</span>
-                    {item.beta && (
-                      <span
-                        aria-label={t("beta")}
-                        className="rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300"
-                      >
-                        {t("beta")}
-                      </span>
-                    )}
-                    {showUnreadDot && (
-                      <span
-                        aria-label={t("unreadConversations", { count: totalUnread })}
-                        className="relative flex h-2 w-2"
-                      >
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-                      </span>
-                    )}
-                    {pendientesEnEstaOpcion > 0 && (
-                      <span
-                        aria-label={`${pendientesEnEstaOpcion} aspirantes esperan matrícula`}
-                        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#BDDB61] px-1.5 text-[10px] font-bold text-[#27348B]"
-                      >
-                        {pendientesEnEstaOpcion > 9 ? "9+" : pendientesEnEstaOpcion}
-                      </span>
-                    )}
-                    {showNotificationBadge && (
-                      <span
-                        aria-label={t("unreadNotifications", { count: unreadNotifications })}
-                        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#BDDB61] px-1.5 text-[10px] font-bold text-[#27348B]"
-                      >
-                        {unreadNotifications > 9 ? "9+" : unreadNotifications}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
+            {NAV_SIEMPRE.map((item) => (
+              <li key={item.href}>
+                <Enlace item={item} activo={esRuta(pathname, item.href)} t={t} />
+              </li>
+            ))}
           </ul>
+
+          {areas.map((area) => {
+            const items = area.items;
+            const abierto = plano || abiertas.has(area.id);
+            return (
+              <div key={area.id} className={plano ? "mt-1" : "mt-3"}>
+                {!plano && (
+                  <button
+                    type="button"
+                    onClick={() => alternarArea(area.id)}
+                    aria-expanded={abierto}
+                    aria-controls={`area-${area.id}`}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[11px] font-bold uppercase tracking-[0.8px] text-sidebar-foreground/45 transition-colors hover:text-sidebar-foreground/70"
+                  >
+                    <area.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    <span className="flex-1">{t(area.labelKey)}</span>
+                    <ChevronDown
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 transition-transform",
+                        abierto ? "rotate-0" : "-rotate-90",
+                      )}
+                      aria-hidden
+                    />
+                  </button>
+                )}
+                {abierto && (
+                  <ul id={`area-${area.id}`} className="flex flex-col gap-1">
+                    {items.map((item) => (
+                      <li key={item.href}>
+                        <Enlace
+                          item={item}
+                          activo={esRuta(pathname, item.href)}
+                          t={t}
+                          insignia={
+                            item.href === "/inbox" && totalUnread > 0
+                              ? "punto"
+                              : item.href === "/notifications" && unreadNotifications > 0
+                                ? String(Math.min(unreadNotifications, 9)) +
+                                  (unreadNotifications > 9 ? "+" : "")
+                                : item.href === "/alta-alumnos" && pendientesAlta > 0
+                                  ? String(Math.min(pendientesAlta, 9)) +
+                                    (pendientesAlta > 9 ? "+" : "")
+                                  : null
+                          }
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
 
           <div className="my-4 border-t border-sidebar-border" />
 
           <ul className="flex flex-col gap-1">
-            {bottomNavItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
-                      isActive
-                        ? "bg-primary font-bold text-primary-foreground"
-                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {t(item.labelKey as string)}
-                  </Link>
-                </li>
-              );
-            })}
+            {NAV_PIE.map((item) => (
+              <li key={item.href}>
+                <Enlace item={item} activo={pathname.startsWith(item.href)} t={t} />
+              </li>
+            ))}
           </ul>
         </nav>
 
-        {/* User section */}
         <div className="shrink-0 border-t border-sidebar-border p-3">
           {/* Account name display — surfaced only when the account
               name differs from the user's own name (see
@@ -459,4 +352,56 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       </aside>
     </>
   );
+}
+
+
+// ---------------------------------------------------------------------------
+
+/** Una opción del menú. La insignia va en lima institucional. */
+function Enlace({
+  item,
+  activo,
+  t,
+  insignia,
+}: {
+  item: NavItem;
+  activo: boolean;
+  t: (k: string) => string;
+  insignia?: "punto" | string | null;
+}) {
+  return (
+    <Link
+      href={item.href}
+      className={cn(
+        // Más alto en móvil para que el pulgar acierte sin apuntar.
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
+        activo
+          ? "bg-primary font-bold text-primary-foreground"
+          : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+      )}
+    >
+      <item.icon className="h-4 w-4 shrink-0" aria-hidden />
+      <span className="flex-1 truncate">{t(item.labelKey)}</span>
+      {item.beta && (
+        <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300">
+          {t("beta")}
+        </span>
+      )}
+      {insignia === "punto" ? (
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#BDDB61] opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#BDDB61]" />
+        </span>
+      ) : insignia ? (
+        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#BDDB61] px-1.5 text-[10px] font-bold text-[#27348B]">
+          {insignia}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
+/** Activo también en las subrutas: /flows/abc marca /flows. */
+function esRuta(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(href + "/");
 }

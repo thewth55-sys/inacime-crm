@@ -33,20 +33,32 @@ export interface AspiranteGanado {
 export async function cargarPendientesDeAlta(
   db: SupabaseClient,
 ): Promise<AspiranteGanado[]> {
-  const [deals, alumnos] = await Promise.all([
+  const [deals, alumnos, config] = await Promise.all([
     db
       .from("deals")
       .select(
-        `id, value, updated_at, contact_id,
+        `id, value, updated_at, contact_id, status, stage_id,
          contacts!inner ( id, name, phone, email, company )`,
       )
-      .eq("status", "won")
       .order("updated_at", { ascending: false }),
     db.schema("academico").from("alumnos").select("crm_contact_id"),
+    db.schema("academico").from("config_admisiones").select("stage_inscrito_id"),
   ]);
 
   if (deals.error) throw deals.error;
   if (alumnos.error) throw alumnos.error;
+
+  // Un aspirante cuenta como inscrito por CUALQUIERA de dos caminos: que
+  // alguien lo marcara como ganado, o que su tarjeta esté en la columna que
+  // la institución designó como inscripción.
+  //
+  // Hacen falta los dos porque en WACRM son independientes: arrastrar una
+  // tarjeta no cambia el estado del negocio. Mirar sólo el estado perdería a
+  // quien admisiones movió de columna sin abrir la ficha — y ese alumno no se
+  // notaría hasta que llame preguntando por qué no puede entrar.
+  const etapasInscrito = new Set(
+    (config.data ?? []).map((c) => c.stage_inscrito_id as string),
+  );
 
   const yaSonAlumnos = new Set(
     (alumnos.data ?? [])
@@ -59,6 +71,8 @@ export async function cargarPendientesDeAlta(
     value: number | null;
     updated_at: string;
     contact_id: string;
+    status: string;
+    stage_id: string;
     contacts: {
       id: string;
       name: string | null;
@@ -69,7 +83,12 @@ export async function cargarPendientesDeAlta(
   }
 
   return ((deals.data ?? []) as unknown as Fila[])
-    .filter((d) => d.contacts && !yaSonAlumnos.has(d.contacts.id))
+    .filter(
+      (d) =>
+        d.contacts &&
+        (d.status === "won" || etapasInscrito.has(d.stage_id)) &&
+        !yaSonAlumnos.has(d.contacts.id),
+    )
     .map((d) => ({
       dealId: d.id,
       contactId: d.contacts!.id,
@@ -110,4 +129,57 @@ export async function cargarPlanes(db: SupabaseClient): Promise<Plan[]> {
     clave: p.clave as string,
     programa: (p.programas as unknown as { nombre: string })?.nombre ?? "",
   }));
+}
+
+export interface EtapaEmbudo {
+  id: string;
+  nombre: string;
+  pipelineId: string;
+  pipelineNombre: string;
+}
+
+/** Etapas de todos los embudos, para elegir cuál significa inscripción. */
+export async function cargarEtapas(db: SupabaseClient): Promise<EtapaEmbudo[]> {
+  const { data, error } = await db
+    .from("pipeline_stages")
+    .select("id, name, pipeline_id, pipelines!inner ( name )")
+    .order("position");
+  if (error) throw error;
+  return (data ?? []).map((s) => ({
+    id: s.id as string,
+    nombre: s.name as string,
+    pipelineId: s.pipeline_id as string,
+    pipelineNombre:
+      (s.pipelines as unknown as { name: string })?.name ?? "",
+  }));
+}
+
+export async function cargarConfigInscrito(
+  db: SupabaseClient,
+): Promise<Record<string, string>> {
+  const { data } = await db
+    .schema("academico")
+    .from("config_admisiones")
+    .select("pipeline_id, stage_inscrito_id");
+  return Object.fromEntries(
+    (data ?? []).map((c) => [
+      c.pipeline_id as string,
+      c.stage_inscrito_id as string,
+    ]),
+  );
+}
+
+export async function guardarConfigInscrito(
+  db: SupabaseClient,
+  pipelineId: string,
+  stageId: string,
+): Promise<void> {
+  const { error } = await db
+    .schema("academico")
+    .from("config_admisiones")
+    .upsert(
+      { pipeline_id: pipelineId, stage_inscrito_id: stageId, actualizado_en: new Date().toISOString() },
+      { onConflict: "pipeline_id" },
+    );
+  if (error) throw error;
 }

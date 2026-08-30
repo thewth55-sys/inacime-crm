@@ -6,9 +6,13 @@ import { useRolAcademico } from "@/hooks/use-rol-academico";
 import { toast } from "sonner";
 import { Loader2, GraduationCap, ShieldAlert, ArrowRight, Check } from "lucide-react";
 import {
+  cargarConfigInscrito,
+  cargarEtapas,
   cargarPendientesDeAlta,
   cargarPlanes,
+  guardarConfigInscrito,
   type AspiranteGanado,
+  type EtapaEmbudo,
   type Plan,
 } from "@/lib/academico/inscripcion";
 import { cargarMisGrupos } from "@/lib/academico/asistencias";
@@ -30,6 +34,8 @@ export default function AltaAlumnosPage() {
   const [pendientes, setPendientes] = useState<AspiranteGanado[]>([]);
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [grupos, setGrupos] = useState<GrupoDocente[]>([]);
+  const [etapas, setEtapas] = useState<EtapaEmbudo[]>([]);
+  const [configEtapas, setConfigEtapas] = useState<Record<string, string>>({});
   const [cargando, setCargando] = useState(true);
   const [activo, setActivo] = useState<AspiranteGanado | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -51,14 +57,18 @@ export default function AltaAlumnosPage() {
     setCargando(true);
     try {
       const db = createClient();
-      const [ps, pl, gs] = await Promise.all([
+      const [ps, pl, gs, et, cf] = await Promise.all([
         cargarPendientesDeAlta(db),
         cargarPlanes(db),
         cargarMisGrupos(db).catch(() => []),
+        cargarEtapas(db).catch(() => []),
+        cargarConfigInscrito(db).catch(() => ({})),
       ]);
       setPendientes(ps);
       setPlanes(pl);
       setGrupos(gs);
+      setEtapas(et);
+      setConfigEtapas(cf);
     } catch (e) {
       toast.error((e as { message?: string })?.message ?? "No se pudo cargar la cola.");
     } finally {
@@ -147,6 +157,20 @@ export default function AltaAlumnosPage() {
           en cuanto tienen expediente.
         </p>
       </div>
+
+      <ConfigEtapas
+        etapas={etapas}
+        config={configEtapas}
+        onGuardar={async (pipelineId, stageId) => {
+          try {
+            await guardarConfigInscrito(createClient(), pipelineId, stageId);
+            toast.success("Etapa de inscripción actualizada");
+            await cargar();
+          } catch (e) {
+            toast.error((e as { message?: string })?.message ?? "No se pudo guardar.");
+          }
+        }}
+      />
 
       {pendientes.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card px-6 py-14 text-center">
@@ -356,6 +380,68 @@ export default function AltaAlumnosPage() {
 }
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Qué columna del embudo significa que el aspirante ya se inscribió.
+ *
+ * Sin esto, la cola sólo ve a quien alguien marcó como "ganado" abriendo la
+ * ficha. Pero admisiones trabaja arrastrando tarjetas, y en WACRM arrastrar
+ * no cambia el estado del negocio: el alumno se perdería en silencio hasta
+ * que llamara preguntando por qué no puede entrar.
+ */
+function ConfigEtapas({
+  etapas,
+  config,
+  onGuardar,
+}: {
+  etapas: EtapaEmbudo[];
+  config: Record<string, string>;
+  onGuardar: (pipelineId: string, stageId: string) => void;
+}) {
+  const embudos = [...new Map(etapas.map((e) => [e.pipelineId, e])).values()];
+  if (embudos.length === 0) return null;
+
+  const faltaAlguno = embudos.some((e) => !config[e.pipelineId]);
+
+  return (
+    <section
+      className={`rounded-2xl border p-5 ${
+        faltaAlguno ? "border-[#f3d9b3] bg-[#fff8ec]" : "border-border bg-card"
+      }`}
+    >
+      <h2 className="text-base font-bold text-primary">
+        ¿Qué columna significa inscrito?
+      </h2>
+      <p className="mt-0.5 text-xs font-semibold text-muted-foreground">
+        Arrastrar una tarjeta a esa columna basta para que el aspirante entre a
+        esta cola. También cuenta si alguien lo marca como ganado desde la ficha.
+      </p>
+      <div className="mt-3 flex flex-col gap-2.5">
+        {embudos.map((emb) => (
+          <label key={emb.pipelineId} className="flex flex-wrap items-center gap-3">
+            <span className="w-40 shrink-0 text-sm font-bold text-foreground">
+              {emb.pipelineNombre}
+            </span>
+            <select
+              value={config[emb.pipelineId] ?? ""}
+              onChange={(e) => onGuardar(emb.pipelineId, e.target.value)}
+              className="h-10 rounded-lg border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
+            >
+              <option value="">Sin definir</option>
+              {etapas
+                .filter((e) => e.pipelineId === emb.pipelineId)
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.nombre}
+                  </option>
+                ))}
+            </select>
+          </label>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 const ENTRADA =
   "h-12 w-full rounded-xl border-[1.5px] border-[#dfe3ef] bg-[#f8f9fd] px-4 text-sm font-semibold text-foreground outline-none focus:border-primary focus:bg-card";
