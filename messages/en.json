@@ -38,7 +38,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Mi perfil",
     "menuSettings": "Configuración",
-    "menuSignOut": "Cerrar sesión"
+    "menuSignOut": "Cerrar sesión",
+    "asistencias": "Asistencias"
   },
   "Header": {
     "dashboard": "Panel",
@@ -55,7 +56,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Mi perfil",
     "menuSettings": "Configuración",
-    "menuSignOut": "Cerrar sesión"
+    "menuSignOut": "Cerrar sesión",
+    "asistencias": "Registro de asistencias"
   },
   "ModeToggle": {
     "switchMode": "Cambiar entre modo claro y oscuro"

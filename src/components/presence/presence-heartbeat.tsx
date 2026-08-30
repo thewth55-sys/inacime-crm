@@ -60,8 +60,13 @@ export function PresenceHeartbeat() {
         p_status: currentStatus(),
       });
       if (error && !cancelled) {
-        // Non-fatal: presence is best-effort. Log once per failure so a
-        // misconfigured RPC is visible without spamming.
+        // "No account for caller" no es una falla: es un docente o un alumno,
+        // que tiene rol académico pero ninguna cuenta del CRM. La presencia
+        // sólo tiene sentido entre asesores de la bandeja compartida, así que
+        // para ellos se ignora en silencio. Registrarlo llenaría la consola de
+        // producción con ruido y taparía los errores que sí importan.
+        if (error.message.includes("No account for caller")) return;
+        // Lo demás sí se registra: una RPC mal configurada debe verse.
         console.error("[PresenceHeartbeat] touch_presence failed:", error.message);
       }
     };
