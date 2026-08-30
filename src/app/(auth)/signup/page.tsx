@@ -49,12 +49,12 @@ function SignupPageInner() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Las contraseñas no coinciden");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
@@ -139,12 +139,12 @@ function SignupPageInner() {
             )}
           </div>
           <CardTitle className="text-xl text-foreground">
-            {inviteToken ? "Create account & join" : "Create account"}
+            {inviteToken ? "Crear cuenta y unirme" : "Crear cuenta"}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             {inviteToken
-              ? "Verify your email, then accept the invitation to join your team."
-              : "Get started with CRM Template for WhatsApp"}
+              ? "Confirma tu correo y luego acepta la invitación para unirte al equipo."
+              : "Crea tu cuenta del Panel INACIME"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -157,12 +157,12 @@ function SignupPageInner() {
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="fullName" className="text-muted-foreground">
-                Full name
+                Nombre completo
               </Label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Aranza Delgado Rueda"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -192,7 +192,7 @@ function SignupPageInner() {
               <Input
                 id="password"
                 type="password"
-                placeholder="At least 6 characters"
+                placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -207,7 +207,7 @@ function SignupPageInner() {
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Repeat your password"
+                placeholder="Repite tu contraseña"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -220,12 +220,12 @@ function SignupPageInner() {
               disabled={loading}
               className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Creando cuenta…" : "Crear cuenta"}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            ¿Ya tienes cuenta?{" "}
             <Link
               href={
                 inviteToken
@@ -234,7 +234,7 @@ function SignupPageInner() {
               }
               className="text-primary hover:text-primary/80"
             >
-              Sign in
+              Inicia sesión
             </Link>
           </p>
         </CardContent>

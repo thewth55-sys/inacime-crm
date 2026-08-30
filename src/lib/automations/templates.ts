@@ -31,8 +31,8 @@ export interface AutomationTemplateDefinition {
 export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefinition> = {
   welcome_message: {
     slug: 'welcome_message',
-    name: 'Welcome Message',
-    description: 'Auto-reply to first-time contacts with a greeting.',
+    name: 'Mensaje de bienvenida',
+    description: 'Responde al primer contacto de un aspirante con un saludo.',
     // first_inbound_message (added in PR #33) catches both brand-new
     // contacts AND manually-added/imported contacts on their first-ever
     // reply, which is what a user setting up a "welcome" automation
@@ -55,8 +55,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
   },
   out_of_office: {
     slug: 'out_of_office',
-    name: 'Out of Office',
-    description: 'Auto-reply during off-hours so nobody is left waiting.',
+    name: 'Fuera de horario',
+    description: 'Contesta de noche y en fin de semana para que nadie se quede esperando.',
     trigger_type: 'new_message_received',
     trigger_config: {},
     steps: [
@@ -80,8 +80,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
   },
   lead_qualifier: {
     slug: 'lead_qualifier',
-    name: 'Lead Qualifier',
-    description: 'Ask qualification questions to filter inbound leads.',
+    name: 'Calificador de aspirante',
+    description: 'Pregunta programa de interés y escolaridad antes de pasar a un asesor.',
     trigger_type: 'keyword_match',
     trigger_config: {
       keywords: ['pricing', 'quote', 'buy'],
@@ -107,8 +107,8 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
   },
   follow_up_reminder: {
     slug: 'follow_up_reminder',
-    name: 'Follow-up Reminder',
-    description: 'Send a nudge if a contact has not replied within 24 hours.',
+    name: 'Recordatorio de seguimiento',
+    description: 'Avisa al asesor si un aspirante no ha respondido en 24 horas.',
     trigger_type: 'new_message_received',
     trigger_config: {},
     steps: [

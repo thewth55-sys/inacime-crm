@@ -40,7 +40,10 @@ export function SettingsOverview({
     useAuth();
   const { mode, theme } = useTheme();
   const t = useTranslations('Settings.overview');
-  const tRoles = useTranslations('roles');
+  // Las etiquetas de rol viven bajo Settings.roles; apuntar a 'roles' a secas
+  // hacía que se pintara la ruta cruda («roles.owner») en el chip.
+  const tRoles = useTranslations('Settings.roles');
+  const tAppearance = useTranslations('Settings.appearance');
   const tSections = useTranslations('Settings.sections');
 
   const [counts, setCounts] = useState<OverviewCounts | null>(null);
@@ -149,7 +152,6 @@ export function SettingsOverview({
   const currencyLabel =
     CURRENCIES.find((c) => c.code === defaultCurrency)?.label ?? defaultCurrency;
   const themeName = THEMES.find((t) => t.id === theme)?.name ?? theme;
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   // Per-tile loading + subtitle. `null` counts render as a graceful
   // fallback so a single failed query never blanks a tile.
@@ -215,7 +217,10 @@ export function SettingsOverview({
     {
       section: 'appearance',
       loading: false,
-      subtitle: t('appearance', { mode: cap(mode), theme: themeName }),
+      subtitle: t('appearance', {
+        mode: tAppearance(mode === 'dark' ? 'modeDark' : 'modeLight'),
+        theme: themeName,
+      }),
     },
   ];
 
