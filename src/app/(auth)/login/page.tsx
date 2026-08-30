@@ -4,6 +4,15 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  ChartColumn,
+  Clock,
+  CreditCard,
+  ReceiptText,
+  ClipboardList,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 // Pantalla de acceso al Panel INACIME.
@@ -16,11 +25,11 @@ import { createClient } from "@/lib/supabase/client";
 // Paleta: #27348B azul institucional · #00C1F4 cian · #BDDB61 lima
 
 const BENEFICIOS = [
-  { icono: "📊", texto: "Consulta tus calificaciones por parcial" },
-  { icono: "🕐", texto: "Revisa horarios, grupos y aulas" },
-  { icono: "💳", texto: "Paga tu colegiatura en línea" },
-  { icono: "🧾", texto: "Descarga recibos y facturas" },
-  { icono: "📝", texto: "Levanta solicitudes y trámites" },
+  { Icono: ChartColumn, texto: "Consulta tus calificaciones por parcial" },
+  { Icono: Clock, texto: "Revisa horarios, grupos y aulas" },
+  { Icono: CreditCard, texto: "Paga tu colegiatura en línea" },
+  { Icono: ReceiptText, texto: "Descarga recibos y facturas" },
+  { Icono: ClipboardList, texto: "Levanta solicitudes y trámites" },
 ];
 
 export default function LoginPage() {
@@ -42,6 +51,7 @@ function LoginPageInner() {
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
+  const [verPassword, setVerPassword] = useState(false);
   const [mantenerSesion, setMantenerSesion] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -138,15 +148,30 @@ function LoginPageInner() {
             >
               CONTRASEÑA
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              className="w-full rounded-xl border-[1.5px] border-[#dfe3ef] bg-[#f8f9fd] px-[17px] py-[15px] text-[15px] text-[#2B2B3A] outline-none focus:border-[#00C1F4] focus:bg-white"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={verPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                className="w-full rounded-xl border-[1.5px] border-[#dfe3ef] bg-[#f8f9fd] py-[15px] pl-[17px] pr-[52px] text-[15px] text-[#2B2B3A] outline-none focus:border-[#00C1F4] focus:bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => setVerPassword((v) => !v)}
+                aria-label={verPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-pressed={verPassword}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[#a3a8bd] transition-colors hover:text-[#27348B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00C1F4]"
+              >
+                {verPassword ? (
+                  <EyeOff className="h-[18px] w-[18px]" aria-hidden />
+                ) : (
+                  <Eye className="h-[18px] w-[18px]" aria-hidden />
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="mt-0.5 flex items-center justify-between">
@@ -224,12 +249,12 @@ function LoginPageInner() {
         </h2>
 
         <div className="mt-[34px] flex flex-col gap-4">
-          {BENEFICIOS.map((b) => (
-            <div key={b.texto} className="flex items-center gap-[15px]">
-              <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[11px] bg-white/[0.12] text-[17px]">
-                {b.icono}
+          {BENEFICIOS.map(({ Icono, texto }) => (
+            <div key={texto} className="flex items-center gap-[15px]">
+              <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[11px] bg-white/[0.12]">
+                <Icono className="h-[19px] w-[19px] text-[#BDDB61]" strokeWidth={2} aria-hidden />
               </span>
-              <span className="text-base font-semibold text-white/90">{b.texto}</span>
+              <span className="text-base font-semibold text-white/90">{texto}</span>
             </div>
           ))}
         </div>
