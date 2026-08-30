@@ -109,7 +109,7 @@ html[data-mode="dark"] {
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.16 0.01 260);
+  --sidebar: oklch(0.228 0.071 272.6);   /* #12183d — mismo marino en ambos modos */
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.22 0.01 260);
   --sidebar-accent-foreground: oklch(0.985 0 0);
@@ -138,11 +138,16 @@ html[data-mode="light"] {
   --chart-4: oklch(0.8 0.04 260);
   --chart-5: oklch(0.87 0.03 260);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0.002 260);
-  --sidebar-foreground: oklch(0.21 0.01 260);
-  --sidebar-accent: oklch(0.96 0.004 260);
-  --sidebar-accent-foreground: oklch(0.25 0.01 260);
-  --sidebar-border: oklch(0.922 0.004 260);
+  /* Chrome INACIME: barra lateral marino y fondo de página azulado, como el
+   * mockup. La barra es oscura también en modo claro — es la marca, no el
+   * tema, así que no se invierte con el modo. */
+  --background: oklch(0.956 0.01 273.4);   /* #eef0f7 */
+  --border: oklch(0.926 0.014 272.7);      /* #e3e6f0 */
+  --sidebar: oklch(0.228 0.071 272.6);     /* #12183d */
+  --sidebar-foreground: oklch(0.98 0.005 273);
+  --sidebar-accent: oklch(0.285 0.08 273.4); /* #1e2551 */
+  --sidebar-accent-foreground: oklch(0.98 0.005 273);
+  --sidebar-border: oklch(0.3 0.06 273);
 }
 
 /* ---- ACCENT: primary color ---- */

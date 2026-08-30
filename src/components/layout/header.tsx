@@ -18,6 +18,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 
+/** Antetítulo del encabezado: la sección a la que pertenece cada pantalla.
+ *  El mockup lo usa para ubicar de un vistazo en qué área estás. */
+const pageEyebrows: Record<string, string> = {
+  "/dashboard": "ADMISIONES",
+  "/inbox": "CONVERSACIONES",
+  "/notifications": "ADMISIONES",
+  "/contacts": "CAPTACIÓN",
+  "/pipelines": "CAPTACIÓN",
+  "/broadcasts": "COMUNICACIÓN",
+  "/automations": "COMUNICACIÓN",
+  "/flows": "COMUNICACIÓN",
+  "/agents": "COMUNICACIÓN",
+  "/settings": "SISTEMA",
+};
+
+function getEyebrow(pathname: string): string | null {
+  const hit = Object.entries(pageEyebrows).find(
+    ([path]) => pathname === path || pathname.startsWith(path + "/"),
+  );
+  return hit ? hit[1] : null;
+}
+
 const pageTitles: Record<string, string> = {
   "/dashboard": "dashboard",
   "/inbox": "inbox",
@@ -50,6 +72,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
   const pathname = usePathname();
   const { profile, signOut } = useAuth();
   const titleKey = getPageTitleKey(pathname);
+  const eyebrow = getEyebrow(pathname);
 
   const initial =
     profile?.full_name?.charAt(0)?.toUpperCase() ??
@@ -57,7 +80,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
     "U";
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 lg:px-6">
+    <header className="flex h-[74px] shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-4 lg:px-6">
       <div className="flex min-w-0 items-center gap-2">
         {/* Hamburger — mobile only. 44×44 hit target per Apple HIG. */}
         <button
@@ -68,9 +91,16 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
-          {t(titleKey as string)}
-        </h1>
+        <div className="min-w-0">
+          {eyebrow && (
+            <div className="text-[11.5px] font-bold tracking-[1.2px] text-muted-foreground">
+              {eyebrow}
+            </div>
+          )}
+          <h1 className="truncate text-[21px] font-bold leading-tight tracking-[-0.3px] text-primary">
+            {t(titleKey as string)}
+          </h1>
+        </div>
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">

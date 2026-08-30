@@ -66,18 +66,6 @@ const ROLE_CHIP: Record<
       "border-border bg-card text-muted-foreground",
   },
 };
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   href: string;
@@ -105,6 +93,13 @@ const navItems: NavItem[] = [
 const bottomNavItems = [
   { href: "/settings", labelKey: "settings", icon: Settings },
 ];
+
+/** Iniciales para el avatar cuadrado: "Aranza Delgado Rueda" -> "AD". */
+function iniciales(nombre?: string | null, correo?: string | null): string {
+  const base = (nombre || correo || "?").trim();
+  const partes = base.split(/[\s@.]+/).filter(Boolean);
+  return (partes[0]?.[0] ?? "?").concat(partes[1]?.[0] ?? "").toUpperCase();
+}
 
 interface SidebarProps {
   /** Controlled on mobile by the Header's hamburger button. Ignored on lg+. */
@@ -177,7 +172,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       <aside
         className={cn(
           // Mobile: fixed drawer that slides in from the left.
-          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-border bg-card",
+          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar",
           "transition-transform duration-200 ease-out will-change-transform",
           open ? "translate-x-0" : "-translate-x-full",
           // Desktop: static, always visible — reset all the mobile framing.
@@ -187,34 +182,44 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       >
         {/* Logo row. On mobile we put a close button here; on desktop the
             close button is hidden since the sidebar is always-visible. */}
-        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border px-4">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            {/* Logotipo institucional. El del mockup, no una reconstrucción. */}
-            <Image
-              src="/inacime-logo.png"
-              alt="INACIME"
-              width={2396}
-              height={725}
-              priority
-              className="h-7 w-auto dark:hidden"
-            />
+            {/* Variante clara siempre: la barra es marino en los dos modos. */}
             <Image
               src="/inacime-logo-claro.png"
               alt="INACIME"
               width={2396}
               height={725}
               priority
-              className="hidden h-7 w-auto dark:block"
+              className="h-7 w-auto"
             />
           </Link>
           <button
             type="button"
             onClick={onClose}
             aria-label={t("closeMenu")}
-            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:hidden"
           >
             <X className="h-5 w-5" />
           </button>
+        </div>
+
+        {/* Ficha de quien está usando el panel. En el mockup va arriba, no
+            abajo: es lo primero que confirma "entré con la cuenta correcta". */}
+        <div className="shrink-0 px-3 pt-3">
+          <div className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-3.5 py-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[11px] bg-primary text-[15px] font-bold text-primary-foreground">
+              {iniciales(profile?.full_name, profile?.email)}
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-[13.5px] font-bold text-sidebar-foreground">
+                {profile?.full_name || t("defaultUser")}
+              </div>
+              <div className="truncate text-[11.5px] font-semibold text-sidebar-foreground/50">
+                {accountRole ? t(ROLE_CHIP[accountRole].labelKey) : profile?.email}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Main navigation */}
@@ -243,8 +248,8 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                       // Taller on mobile so fingers can hit the row reliably (≥44px).
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "bg-primary font-bold text-primary-foreground"
+                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -269,7 +274,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                     {showNotificationBadge && (
                       <span
                         aria-label={t("unreadNotifications", { count: unreadNotifications })}
-                        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
+                        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#BDDB61] px-1.5 text-[10px] font-bold text-[#27348B]"
                       >
                         {unreadNotifications > 9 ? "9+" : unreadNotifications}
                       </span>
@@ -280,7 +285,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             })}
           </ul>
 
-          <div className="my-4 border-t border-border" />
+          <div className="my-4 border-t border-sidebar-border" />
 
           <ul className="flex flex-col gap-1">
             {bottomNavItems.map((item) => {
@@ -292,8 +297,8 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "bg-primary font-bold text-primary-foreground"
+                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -306,7 +311,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         </nav>
 
         {/* User section */}
-        <div className="shrink-0 border-t border-border p-3">
+        <div className="shrink-0 border-t border-sidebar-border p-3">
           {/* Account name display — surfaced only when the account
               name differs from the user's own name (see
               `showAccountStrip`). For a default solo account the two
@@ -314,7 +319,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               below; for renamed or shared accounts it tells the user
               which account they're acting in. */}
           {showAccountStrip && account?.name ? (
-            <div className="mb-2 flex items-center gap-2 px-3 text-xs text-muted-foreground">
+            <div className="mb-2 flex items-center gap-2 px-3 text-xs text-sidebar-foreground/50">
               <UsersRound className="size-3.5 shrink-0" />
               {/* `title=` exposes the full name on hover when it
                   gets truncated (long account names + narrow
@@ -342,70 +347,16 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               ) : null}
             </div>
           ) : null}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/60 focus:bg-muted/60 focus:outline-none data-popup-open:bg-muted/60">
-              <Avatar className="size-8 shrink-0">
-                {profile?.avatar_url ? (
-                  <AvatarImage
-                    src={profile.avatar_url}
-                    alt={profile.full_name ?? t("defaultAvatar")}
-                  />
-                ) : null}
-                <AvatarFallback className="bg-primary/10 text-sm font-medium text-primary">
-                  {profile?.full_name?.charAt(0)?.toUpperCase() ??
-                    profile?.email?.charAt(0)?.toUpperCase() ??
-                    "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {profile?.full_name ?? t("defaultUser")}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {profile?.email ?? ""}
-                </p>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              side="top"
-              sideOffset={6}
-              className="min-w-56 bg-popover text-popover-foreground ring-border"
-            >
-              <DropdownMenuItem
-                render={
-                  <Link
-                    href="/settings?tab=profile"
-                    onClick={onClose}
-                    className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
-                  />
-                }
-              >
-                <User className="size-4" />
-                {t("menuProfile")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                render={
-                  <Link
-                    href="/settings?tab=whatsapp"
-                    onClick={onClose}
-                    className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
-                  />
-                }
-              >
-                <Settings className="size-4" />
-                {t("menuSettings")}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem
-                onClick={signOut}
-                className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
-              >
-                <LogOut className="size-4" />
-                {t("menuSignOut")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Sólo cerrar sesión: la ficha del usuario ya vive arriba y el
+              perfil se llega desde Configuración. Repetirlo aquí era ruido. */}
+          <button
+            type="button"
+            onClick={signOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-sidebar-foreground/55 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <LogOut className="size-4 shrink-0" />
+            {t("menuSignOut")}
+          </button>
         </div>
       </aside>
     </>
