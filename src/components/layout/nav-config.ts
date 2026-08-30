@@ -3,6 +3,7 @@ import {
   Bot,
   ClipboardCheck,
   CalendarClock,
+  CalendarRange,
   GitBranch,
   GraduationCap,
   LayoutDashboard,
@@ -104,6 +105,12 @@ export const AREAS: NavArea[] = [
     items: [
       { href: "/usuarios", labelKey: "usuarios", icon: UserCog, soloRoles: ["direccion"] },
       {
+        href: "/ciclo",
+        labelKey: "ciclo",
+        icon: CalendarRange,
+        soloRoles: ["direccion", "coordinacion", "control_escolar"],
+      },
+      {
         href: "/reglamento",
         labelKey: "reglamento",
         icon: Scale,
@@ -123,7 +130,7 @@ export const AREAS: NavArea[] = [
  */
 const ACCESO: Record<RolAcademico, string[]> = {
   direccion: ["admisiones", "docencia", "control_escolar", "administracion"],
-  control_escolar: ["admisiones", "docencia", "control_escolar"],
+  control_escolar: ["admisiones", "docencia", "control_escolar", "administracion"],
   coordinacion: ["docencia", "control_escolar", "administracion"],
   docente: ["docencia"],
   finanzas: [],

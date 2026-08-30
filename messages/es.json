@@ -55,7 +55,8 @@
     "areaControlEscolar": "Control Escolar",
     "areaAdministracion": "Administración",
     "agenda": "Agenda",
-    "miDisponibilidad": "Mi disponibilidad"
+    "miDisponibilidad": "Mi disponibilidad",
+    "ciclo": "Ciclo y periodos"
   },
   "Header": {
     "dashboard": "Panel",
@@ -80,7 +81,8 @@
     "altaAlumnos": "Alta de alumnos",
     "agenda": "Agenda de entrevistas",
     "miDisponibilidad": "Mi disponibilidad",
-    "catalogoAgenda": "Catálogo de la agenda"
+    "catalogoAgenda": "Catálogo de la agenda",
+    "ciclo": "Ciclo y periodos"
   },
   "ModeToggle": {
     "switchMode": "Cambiar entre modo claro y oscuro"

@@ -38,9 +38,30 @@ import { ActivityFeed } from '@/components/dashboard/activity-feed'
 
 import { useTranslations } from 'next-intl'
 
+import { useRolAcademico } from '@/hooks/use-rol-academico'
+import { ResumenOperativo } from '@/components/dashboard/resumen-operativo'
+
 type RangeDays = 7 | 30 | 90
 
+/**
+ * El panel de entrada, distinto según a qué se dedica quien entra.
+ *
+ * Dirección y control escolar ven el resumen operativo del ciclo:
+ * matrícula, grupos, actas sin cerrar. Un asesor de admisiones ve el
+ * panel del CRM —conversaciones y embudo—, que es su trabajo del día.
+ *
+ * Es una sola entrada de menú, "Panel", como en el mockup: el rol decide
+ * qué significa, no una opción más en la barra.
+ */
 export default function DashboardPage() {
+  const { rol, cargando } = useRolAcademico()
+
+  if (cargando) return null
+  if (rol === 'direccion' || rol === 'control_escolar') return <ResumenOperativo />
+  return <PanelCrm />
+}
+
+function PanelCrm() {
   const t = useTranslations('Dashboard.page')
   const { defaultCurrency } = useAuth()
   const [metrics, setMetrics] = useState<MetricsBundle | null>(null)

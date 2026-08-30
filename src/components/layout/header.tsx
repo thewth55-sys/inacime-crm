@@ -21,7 +21,9 @@ import { ModeToggle } from "@/components/layout/mode-toggle";
 /** Antetítulo del encabezado: la sección a la que pertenece cada pantalla.
  *  El mockup lo usa para ubicar de un vistazo en qué área estás. */
 const pageEyebrows: Record<string, string> = {
-  "/dashboard": "ADMISIONES",
+  // /dashboard no lleva antetítulo: la pantalla cambia según el rol
+  // —resumen operativo para dirección, panel del CRM para admisiones— y
+  // cualquier etiqueta fija estaría mal para la mitad de quienes entran.
   "/inbox": "CONVERSACIONES",
   "/notifications": "ADMISIONES",
   "/asistencias": "CAPTURA",
@@ -31,6 +33,7 @@ const pageEyebrows: Record<string, string> = {
   "/agenda/disponibilidad": "MI AGENDA",
   "/agenda/catalogo": "CONFIGURACIÓN",
   "/agenda": "ADMISIONES",
+  "/ciclo": "PROGRAMACIÓN",
   "/usuarios": "ADMINISTRACIÓN",
   "/contacts": "CAPTACIÓN",
   "/pipelines": "CAPTACIÓN",
@@ -59,6 +62,7 @@ const pageTitles: Record<string, string> = {
   "/agenda/disponibilidad": "miDisponibilidad",
   "/agenda/catalogo": "catalogoAgenda",
   "/agenda": "agenda",
+  "/ciclo": "ciclo",
   "/usuarios": "usuarios",
   "/contacts": "contacts",
   "/pipelines": "pipelines",

@@ -51,10 +51,53 @@ interface Plan {
   programas: { nombre: string } | null;
 }
 
+/** Periodo tal como lo definió el ciclo activo, con su nombre legible. */
+interface PeriodoDelCiclo {
+  clave: string;
+  nombre: string;
+  orden: number;
+}
+
+/**
+ * Un renglón por cada periodo que el ciclo realmente tiene.
+ *
+ * Antes la pantalla sólo mostraba los renglones que ya existían en
+ * `politica_periodos`. Si una coordinación agregaba un cuarto parcial al
+ * ciclo, el reglamento seguía repartiendo entre tres y el nuevo periodo
+ * no contaba para la definitiva, sin que nada lo dijera. Ahora los
+ * periodos mandan: los que faltan aparecen en 0 y quien edite tiene que
+ * repartir el 100% antes de poder guardar.
+ */
+function completarPesos(
+  guardados: Ponderacion[],
+  periodos: PeriodoDelCiclo[],
+  politicas: Politica[],
+): Ponderacion[] {
+  if (periodos.length === 0) return guardados;
+  const salida: Ponderacion[] = [];
+  for (const pol of politicas) {
+    for (const per of periodos) {
+      const ya = guardados.find(
+        (g) => g.politica_id === pol.id && g.periodo_clave === per.clave,
+      );
+      salida.push(
+        ya ?? {
+          politica_id: pol.id,
+          periodo_clave: per.clave,
+          ponderacion: 0,
+          orden: per.orden,
+        },
+      );
+    }
+  }
+  return salida;
+}
+
 export default function ReglamentoPage() {
   const { rol, cargando: cargandoRol } = useRolAcademico();
   const [politicas, setPoliticas] = useState<Politica[]>([]);
   const [pesos, setPesos] = useState<Ponderacion[]>([]);
+  const [periodos, setPeriodos] = useState<PeriodoDelCiclo[]>([]);
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [selId, setSelId] = useState("");
   const [cargando, setCargando] = useState(true);
@@ -68,16 +111,28 @@ export default function ReglamentoPage() {
     setCargando(true);
     try {
       const a = createClient().schema("academico");
-      const [pol, pon, pl] = await Promise.all([
+      const [pol, pon, pl, per] = await Promise.all([
         a.from("politicas_evaluacion").select("*").is("vigente_hasta", null).order("nombre"),
         a.from("politica_periodos").select("*").order("orden"),
         a.from("planes_estudio").select("id, clave, programas ( nombre )"),
+        a
+          .from("periodos")
+          .select("clave, nombre, orden, ciclos!inner ( estado )")
+          .eq("ciclos.estado", "activo")
+          .order("orden"),
       ]);
       if (pol.error) throw pol.error;
       const lista = (pol.data ?? []) as unknown as Politica[];
       setPoliticas(lista);
-      setPesos((pon.data ?? []) as unknown as Ponderacion[]);
       setPlanes((pl.data ?? []) as unknown as Plan[]);
+      setPeriodos((per.data ?? []) as unknown as PeriodoDelCiclo[]);
+      setPesos(
+        completarPesos(
+          (pon.data ?? []) as unknown as Ponderacion[],
+          (per.data ?? []) as unknown as PeriodoDelCiclo[],
+          lista,
+        ),
+      );
       if (lista.length > 0 && !selId) setSelId(lista[0].id);
       setSucio(false);
     } catch (e) {
@@ -272,13 +327,17 @@ export default function ReglamentoPage() {
 
           <Panel
             titulo="Peso de cada periodo"
-            ayuda="Cuánto aporta cada parcial a la definitiva. Deben sumar 100%."
+            ayuda={
+              periodos.length > 0
+                ? `Los ${periodos.length} periodos del ciclo activo. Cuánto aporta cada uno a la definitiva; deben sumar 100%. Un periodo puede pesar 0 si se captura pero no cuenta.`
+                : "Cuánto aporta cada periodo a la definitiva. Deben sumar 100%."
+            }
           >
             <div className="flex flex-col gap-2">
               {misPesos.map((p) => (
                 <div key={p.periodo_clave} className="flex items-center gap-3">
-                  <span className="w-24 text-sm font-bold text-foreground">
-                    {p.periodo_clave}
+                  <span className="w-28 shrink-0 text-sm font-bold text-foreground">
+                    {periodos.find((x) => x.clave === p.periodo_clave)?.nombre ?? p.periodo_clave}
                   </span>
                   <input
                     type="number"
