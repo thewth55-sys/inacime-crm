@@ -31,6 +31,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
+import { usePendientesDeAlta } from "@/hooks/use-pendientes-alta";
 import {
   ROLES_REGLAMENTO,
   useRolAcademico,
@@ -121,6 +122,12 @@ const navItems: NavItem[] = [
     rolesAcademicos: ACADEMICO_TODOS,
   },
   {
+    href: "/alta-alumnos",
+    labelKey: "altaAlumnos",
+    icon: GraduationCap,
+    rolesAcademicos: ["direccion", "control_escolar"],
+  },
+  {
     href: "/usuarios",
     labelKey: "usuarios",
     icon: UserCog,
@@ -166,6 +173,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const totalUnread = useTotalUnread();
   const unreadNotifications = useUnreadNotifications();
   const { rol: rolAcademico, cargando: cargandoRol } = useRolAcademico();
+  const pendientesAlta = usePendientesDeAlta(rolAcademico);
 
   // Docentes y alumnos no tienen cuenta del CRM — el latido de presencia ya
   // lo mostraba fallando en cada ciclo. Enseñarles la bandeja o el embudo
@@ -317,6 +325,11 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               const showNotificationBadge =
                 item.href === "/notifications" && unreadNotifications > 0;
 
+              // La insignia es lo que convierte "avísale a control escolar"
+              // en algo que el sistema empuja solo.
+              const pendientesEnEstaOpcion =
+                item.href === "/alta-alumnos" ? pendientesAlta : 0;
+
               return (
                 <li key={item.href}>
                   <Link
@@ -346,6 +359,14 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                       >
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                      </span>
+                    )}
+                    {pendientesEnEstaOpcion > 0 && (
+                      <span
+                        aria-label={`${pendientesEnEstaOpcion} aspirantes esperan matrícula`}
+                        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#BDDB61] px-1.5 text-[10px] font-bold text-[#27348B]"
+                      >
+                        {pendientesEnEstaOpcion > 9 ? "9+" : pendientesEnEstaOpcion}
                       </span>
                     )}
                     {showNotificationBadge && (

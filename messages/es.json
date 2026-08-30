@@ -48,7 +48,8 @@
     "rol_coordinacion": "Coordinación",
     "rol_docente": "Docente",
     "rol_alumno": "Alumno",
-    "usuarios": "Usuarios"
+    "usuarios": "Usuarios",
+    "altaAlumnos": "Alta de alumnos"
   },
   "Header": {
     "dashboard": "Panel",
@@ -69,7 +70,8 @@
     "asistencias": "Registro de asistencias",
     "calificaciones": "Calificaciones por grupo",
     "reglamento": "Reglamento de evaluación",
-    "usuarios": "Usuarios del expediente"
+    "usuarios": "Usuarios del expediente",
+    "altaAlumnos": "Alta de alumnos"
   },
   "ModeToggle": {
     "switchMode": "Cambiar entre modo claro y oscuro"

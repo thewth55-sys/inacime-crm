@@ -64,6 +64,14 @@ interface ContactWithTags extends Contact {
   tags?: Tag[];
 }
 
+/** Iniciales para el avatar. Sin nombre cae al teléfono, que siempre existe. */
+function iniciales(nombre: string | null | undefined, telefono: string): string {
+  const base = (nombre || "").replace(",", "").trim();
+  if (!base) return telefono.replace(/\D/g, "").slice(-2) || "?";
+  const p = base.split(/\s+/).filter(Boolean);
+  return ((p[0]?.[0] ?? "?") + (p[1]?.[0] ?? "")).toUpperCase();
+}
+
 export default function ContactsPage() {
   const t = useTranslations('Contacts.page');
   const supabase = createClient();
@@ -600,10 +608,19 @@ export default function ContactsPage() {
                       aria-label={`Select ${contact.name || contact.phone}`}
                     />
                   </TableCell>
-                  <TableCell className="text-foreground font-medium">
-                    {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-[9px] bg-primary-soft text-[11px] font-bold text-primary">
+                        {iniciales(contact.name, contact.phone)}
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {contact.name || (
+                          <span className="italic text-muted-foreground">{t('unnamed')}</span>
+                        )}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">
+                  <TableCell className="text-sm tabular-nums text-muted-foreground">
                     {contact.phone}
                   </TableCell>
                   <TableCell className="text-muted-foreground hidden md:table-cell text-sm">
