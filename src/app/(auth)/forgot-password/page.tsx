@@ -20,6 +20,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
   const supabase = createClient();
 
   const handleReset = async (e: React.FormEvent) => {
@@ -27,12 +28,24 @@ export default function ForgotPasswordPage() {
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
+    // Se pasa por una ruta propia en vez de resetPasswordForEmail porque la
+    // cuenta de un alumno es <matricula>@alumnos.inacime.com, un buzón que no
+    // existe: el enlace tiene que salir hacia su correo personal.
+    try {
+      const r = await fetch("/api/academico/recuperar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identificador: email }),
+      });
+      const json = await r.json();
+      if (!r.ok) {
+        setError(json.error ?? "No se pudo procesar la solicitud.");
+        setLoading(false);
+        return;
+      }
+      setAviso(json.mensaje ?? null);
+    } catch {
+      setError("No se pudo contactar al servidor.");
       setLoading(false);
       return;
     }
@@ -53,9 +66,8 @@ export default function ForgotPasswordPage() {
               Revisa tu correo
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enviamos un enlace de recuperación a{" "}
-              <span className="text-foreground">{email}</span>. Búscalo en tu bandeja
-              de entrada.
+              {aviso ??
+                "Si la cuenta existe y tiene un correo de contacto registrado, te enviamos las instrucciones."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -95,12 +107,12 @@ export default function ForgotPasswordPage() {
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="email" className="text-muted-foreground">
-                Correo
+                Matrícula o correo institucional
               </Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="you@example.com"
+                type="text"
+                placeholder="12410783 o nombre@inacime.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

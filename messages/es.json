@@ -47,7 +47,8 @@
     "rol_finanzas": "Finanzas",
     "rol_coordinacion": "Coordinación",
     "rol_docente": "Docente",
-    "rol_alumno": "Alumno"
+    "rol_alumno": "Alumno",
+    "usuarios": "Usuarios"
   },
   "Header": {
     "dashboard": "Panel",
@@ -67,7 +68,8 @@
     "menuSignOut": "Cerrar sesión",
     "asistencias": "Registro de asistencias",
     "calificaciones": "Calificaciones por grupo",
-    "reglamento": "Reglamento de evaluación"
+    "reglamento": "Reglamento de evaluación",
+    "usuarios": "Usuarios del expediente"
   },
   "ModeToggle": {
     "switchMode": "Cambiar entre modo claro y oscuro"

@@ -121,6 +121,12 @@ const navItems: NavItem[] = [
     rolesAcademicos: ACADEMICO_TODOS,
   },
   {
+    href: "/usuarios",
+    labelKey: "usuarios",
+    icon: UserCog,
+    rolesAcademicos: ["direccion"],
+  },
+  {
     href: "/reglamento",
     labelKey: "reglamento",
     icon: Scale,

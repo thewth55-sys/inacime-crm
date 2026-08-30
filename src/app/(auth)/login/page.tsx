@@ -24,6 +24,13 @@ import { createClient } from "@/lib/supabase/client";
 //
 // Paleta: #27348B azul institucional · #00C1F4 cian · #BDDB61 lima
 
+// Dominio con el que se arma la cuenta del alumno a partir de su matrícula.
+// Está en `academico.dominios_permitidos` como fuente de verdad; aquí va la
+// misma constante porque la pantalla de acceso no tiene sesión para
+// consultarla, y pedirlo sin sesión abriría justo el endpoint que se quiso
+// evitar.
+const DOMINIO_ALUMNOS = "alumnos.inacime.com";
+
 const BENEFICIOS = [
   { Icono: ChartColumn, texto: "Consulta tus calificaciones por parcial" },
   { Icono: Clock, texto: "Revisa horarios, grupos y aulas" },
@@ -64,26 +71,33 @@ function LoginPageInner() {
     e.preventDefault();
     setError(null);
 
-    // Supabase autentica por correo. La matrícula y el número de empleado
-    // requieren resolverlos contra el núcleo académico (`academico.alumnos`
-    // y `academico.docentes`), que todavía no vive en esta base — así que
-    // por ahora se lo decimos claro en vez de fallar con "credenciales
-    // inválidas", que mandaría a la persona a buscar el error donde no está.
-    if (!usuario.includes("@")) {
-      setError(
-        "Por ahora el acceso es con tu correo institucional. La entrada con matrícula o número de empleado se habilita cuando se conecte el expediente académico.",
-      );
-      return;
-    }
+    // El alumno teclea su matrícula; por debajo su cuenta es
+    // <matricula>@alumnos.inacime.com. Se completa aquí, del lado del
+    // navegador, y NO consultando la base: un endpoint que reciba una
+    // matrícula y devuelva un correo confirma qué matrículas existen, que es
+    // un oráculo de enumeración que no hace falta abrir.
+    //
+    // El personal siempre escribe su correo institucional completo.
+    const entrada = usuario.trim().toLowerCase();
+    const correo = entrada.includes("@")
+      ? entrada
+      : `${entrada}@${DOMINIO_ALUMNOS}`;
 
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email: usuario.trim(),
+      email: correo,
       password,
     });
 
     if (error) {
-      setError(error.message);
+      // Supabase devuelve el mismo error para usuario inexistente y
+      // contraseña incorrecta, que es lo correcto: distinguirlos revelaría
+      // qué matrículas existen.
+      setError(
+        error.message.toLowerCase().includes("invalid")
+          ? "Usuario o contraseña incorrectos."
+          : error.message,
+      );
       setLoading(false);
       return;
     }
