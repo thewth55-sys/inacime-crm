@@ -16,6 +16,16 @@ export function daysAgoStart(days: number): Date {
 }
 
 /** Date-only key (YYYY-MM-DD) for bucketing rows by local calendar day. */
+/**
+ * Arranque del mes local, `hace` meses atrás. 0 = mes en curso.
+ * Se construye con el constructor de fecha local (no UTC) para que un
+ * usuario en México no vea el mes cambiar seis horas antes de tiempo.
+ */
+export function startOfLocalMonth(hace = 0): Date {
+  const ahora = new Date()
+  return new Date(ahora.getFullYear(), ahora.getMonth() - hace, 1, 0, 0, 0, 0)
+}
+
 export function localDayKey(d: Date | string): string {
   const date = typeof d === 'string' ? new Date(d) : d
   const y = date.getFullYear()

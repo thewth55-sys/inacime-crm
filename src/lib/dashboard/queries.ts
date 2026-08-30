@@ -6,6 +6,7 @@ import {
   localDayKey,
   mondayIndex,
   startOfLocalDay,
+  startOfLocalMonth,
 } from './date-utils'
 import type {
   ActivityItem,
@@ -32,6 +33,8 @@ type DB = SupabaseClient
 export async function loadMetrics(db: DB): Promise<MetricsBundle> {
   const todayStart = startOfLocalDay().toISOString()
   const yesterdayStart = daysAgoStart(1).toISOString()
+  const monthStart = startOfLocalMonth(0).toISOString()
+  const prevMonthStart = startOfLocalMonth(1).toISOString()
 
   const [
     openConvCur,
@@ -42,6 +45,8 @@ export async function loadMetrics(db: DB): Promise<MetricsBundle> {
     openDeals,
     messagesToday,
     messagesYesterday,
+    resueltosMesRows,
+    resueltosMesPrevRows,
   ] = await Promise.all([
     db.from('conversations').select('id', { count: 'exact', head: true }).eq('status', 'open'),
     db
@@ -73,6 +78,16 @@ export async function loadMetrics(db: DB): Promise<MetricsBundle> {
       .eq('sender_type', 'agent')
       .gte('created_at', yesterdayStart)
       .lt('created_at', todayStart),
+    // Negocios ya resueltos este mes y el pasado. `updated_at` es cuando se
+    // movió a ganado o perdido; `created_at` diría cuándo entró el aspirante,
+    // que es otra pregunta.
+    db.from('deals').select('status').in('status', ['won', 'lost']).gte('updated_at', monthStart),
+    db
+      .from('deals')
+      .select('status')
+      .in('status', ['won', 'lost'])
+      .gte('updated_at', prevMonthStart)
+      .lt('updated_at', monthStart),
   ])
 
   const openDealsRows = (openDeals.data ?? []) as { value: number | null }[]
@@ -96,7 +111,26 @@ export async function loadMetrics(db: DB): Promise<MetricsBundle> {
       current: messagesToday.count ?? 0,
       previous: messagesYesterday.count ?? 0,
     },
+    inscritosMes: {
+      current: ganados(resueltosMesRows.data),
+      previous: ganados(resueltosMesPrevRows.data),
+    },
+    tasaConversion: porcentajeGanados(resueltosMesRows.data),
+    resueltosMes: (resueltosMesRows.data ?? []).length,
   }
+}
+
+type FilaEstado = { status: string }
+
+function ganados(filas: unknown): number {
+  return ((filas ?? []) as FilaEstado[]).filter((d) => d.status === 'won').length
+}
+
+/** Ganados sobre el total resuelto. 0 cuando todavía no hay nada cerrado. */
+function porcentajeGanados(filas: unknown): number {
+  const todas = (filas ?? []) as FilaEstado[]
+  if (todas.length === 0) return 0
+  return Math.round((todas.filter((d) => d.status === 'won').length / todas.length) * 100)
 }
 
 // --- 2. Conversations over time ---------------------------------------

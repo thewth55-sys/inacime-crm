@@ -13,6 +13,18 @@ export interface MetricsBundle {
   openDealsValue: number
   openDealsCount: number
   messagesSentToday: MetricDelta
+  /** Negocios ganados este mes contra el mes pasado — inscripciones cerradas. */
+  inscritosMes: MetricDelta
+  /**
+   * Ganados sobre el total ya resuelto (ganados + perdidos) del mes, en
+   * porcentaje. Se excluyen los que siguen abiertos: contarlos como fracaso
+   * hundiría la cifra sólo por tener el embudo lleno.
+   *
+   * `resueltosMes` viaja aparte para poder decir "aún no hay datos" en vez
+   * de pintar un 0% que parece un desplome cuando el mes apenas empieza.
+   */
+  tasaConversion: number
+  resueltosMes: number
 }
 
 export interface ConversationsSeriesPoint {

@@ -9,6 +9,8 @@ import {
   UserPlus,
   DollarSign,
   Send,
+  GraduationCap,
+  TrendingUp,
 } from 'lucide-react'
 
 import {
@@ -131,10 +133,10 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Metric cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Tarjetas de indicadores — retícula de 3 como en el mockup. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {metricsLoading || !metrics ? (
-          Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : (
           <>
             <MetricCard
@@ -183,6 +185,29 @@ export default function DashboardPage() {
                   t('noChange', { suffix: t('vsYesterday') })
                 ),
               }}
+            />
+            <MetricCard
+              title={t('inscritosMes')}
+              value={metrics.inscritosMes.current.toLocaleString()}
+              icon={GraduationCap}
+              delta={{
+                sign: metrics.inscritosMes.current - metrics.inscritosMes.previous,
+                label: deltaLabel(
+                  metrics.inscritosMes.current - metrics.inscritosMes.previous,
+                  t('vsMesPasado'),
+                  t('noChange', { suffix: t('vsMesPasado') })
+                ),
+              }}
+            />
+            <MetricCard
+              title={t('tasaConversion')}
+              value={metrics.resueltosMes > 0 ? `${metrics.tasaConversion}%` : '—'}
+              icon={TrendingUp}
+              subtitle={
+                metrics.resueltosMes > 0
+                  ? t('conversionDetalle', { count: metrics.resueltosMes })
+                  : t('conversionSinDatos')
+              }
             />
           </>
         )}
